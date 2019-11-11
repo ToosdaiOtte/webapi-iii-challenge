@@ -31,8 +31,25 @@ router.post('/', (req, res) => {
     }
 });
 
-router.post('/:id/posts', (req, res) => {
+router.post('/:id/posts', validateUserId, (req, res) => {
+    const postInfo = {...req.body, user_id: req.params.id};
 
+    if(!postInfo.text){
+        res.status(400).json({
+            message: 'Please provide text for the post'
+        })
+    } else {
+        Posts.insert(postInfo)
+        .then(post => {
+            res.status(201).json(post)
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: 'Error adding post to user',
+                err
+            })
+        })        
+    }
 });
 
 router.get('/', (req, res) => {
@@ -47,27 +64,28 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', (req, res) => {
-    const {id} = req.params;
-    Users.getById(id)
-    .then(user => {
-        if(user){
-            res.status(200).json(user)
-        }else {
-            res.status(404).json({
-                message: 'User ID not valid'
-            })
-        }
-    })
-    .catch(err => {
-        res.status(500).json({
-            message: 'Error fetching user',
-            err
-        })
-    })
+router.get('/:id', validateUserId, (req, res) => {
+    // const {id} = req.params;
+    // Users.getById(id)
+    // .then(user => {
+    //     if(user){
+    //         res.status(200).json(user)
+    //     }else {
+    //         res.status(404).json({
+    //             message: 'User ID not valid'
+    //         })
+    //     }
+    // })
+    // .catch(err => {
+    //     res.status(500).json({
+    //         message: 'Error fetching user',
+    //         err
+    //     })
+    // })
+    res.status(200).json(req.user);
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId, (req, res) => {
     const {id} = req.params
     Users.getUserPosts(id)
     .then(posts => {
@@ -92,6 +110,22 @@ router.put('/:id', (req, res) => {
 //custom middleware
 
 function validateUserId(req, res, next) {
+    const {id} = req.params;
+    Users.getById(id)
+    .then(user => {
+        if(user){
+            req.user = user;
+            next();
+        } else{
+            res.status(404).json({ message: 'user does not exist'});
+        }
+    })
+    .catch(err => {
+        res.status(500).json({
+            message: 'Error validating user id',
+            err
+        })
+    })
 
 };
 
