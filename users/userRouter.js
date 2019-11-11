@@ -5,8 +5,30 @@ const Posts = require('../posts/postDb.js');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.use((req, res, next) => {
+    console.log('wheres the logger?');
+    next();
+})
 
+router.post('/', (req, res) => {
+    const newUser = req.body;
+
+    if('name' in newUser === false){
+        res.status(404).json({
+            message: 'Please include a name'
+        })
+    } else {
+        Users.insert(newUser)
+        .then(user => {
+            res.status(201).json(user);           
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: 'Error adding user',
+                err
+            });
+        });        
+    }
 });
 
 router.post('/:id/posts', (req, res) => {
