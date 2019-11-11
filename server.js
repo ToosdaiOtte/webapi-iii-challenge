@@ -7,7 +7,7 @@ const server = express();
 
 server.use(express.json());
 
-server.use('/user', userRouter);
+server.use('/users', userRouter);
 // server.use(helmet());
 // server.use(morgan('dev'));
 server.use(logger);
