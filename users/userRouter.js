@@ -46,7 +46,17 @@ router.get('/:id', (req, res) => {
 });
 
 router.get('/:id/posts', (req, res) => {
-
+    const {id} = req.params
+    Users.getUserPosts(id)
+    .then(posts => {
+        res.status(200).json(posts)
+    })
+    .catch(err => {
+        res.status(500).json({
+            message: 'Error fetching the posts for the user',
+            err
+        });
+    });
 });
 
 router.delete('/:id', (req, res) => {
