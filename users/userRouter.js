@@ -26,7 +26,23 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
-
+    const {id} = req.params;
+    Users.getById(id)
+    .then(user => {
+        if(user){
+            res.status(200).json(user)
+        }else {
+            res.status(404).json({
+                message: 'User ID not valid'
+            })
+        }
+    })
+    .catch(err => {
+        res.status(500).json({
+            message: 'Error fetching user',
+            err
+        })
+    })
 });
 
 router.get('/:id/posts', (req, res) => {
