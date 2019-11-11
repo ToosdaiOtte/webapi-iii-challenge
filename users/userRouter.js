@@ -14,25 +14,8 @@ router.post('/', validateUser, (req, res) => {
     res.status(201).json(req.user);
 });
 
-router.post('/:id/posts', validateUserId, (req, res) => {
-    const postInfo = {...req.body, user_id: req.params.id};
-
-    if(!postInfo.text){
-        res.status(400).json({
-            message: 'Please provide text for the post'
-        })
-    } else {
-        Posts.insert(postInfo)
-        .then(post => {
-            res.status(201).json(post)
-        })
-        .catch(err => {
-            res.status(500).json({
-                message: 'Error adding post to user',
-                err
-            })
-        })        
-    }
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+    res.status(201).json(req.post);
 });
 
 router.get('/', (req, res) => {
@@ -82,8 +65,19 @@ router.delete('/:id', validateUserId, (req, res) => {
     });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, (req, res) => {
+    const updated = {...req.body, user_id: req.params.id};
 
+    Users.update(updated)
+    .then(user => {
+            res.status(200).json(user);
+    })
+    .catch(err => {
+        res.status(500).json({
+            message: 'Error updating post',
+            err
+        })
+    })
 });
 
 //custom middleware
@@ -130,7 +124,25 @@ function validateUser(req, res, next) {
 };
 
 function validatePost(req, res, next) {
+    const postInfo = {...req.body, user_id: req.params.id};
 
+    if(!postInfo.text){
+        res.status(400).json({
+            message: 'Please provide text for post'
+        })
+    } else {
+        Posts.insert(postInfo)
+        .then(post => {         
+            req.post = post;
+            next();
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: 'Error creating post',
+                err
+            })
+        })
+    }
 };
 
 module.exports = router;
