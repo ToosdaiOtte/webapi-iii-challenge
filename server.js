@@ -2,12 +2,14 @@ const express = require('express');
 // const helmet = require('helmet');
 // const morgan = require('morgan');
 const userRouter = require('./users/userRouter.js');
+const postRouter = require('./posts/postDb.js');
 
 const server = express();
 
 server.use(express.json());
 
 server.use('/users', userRouter);
+// server.use('/posts', postRouter);
 // server.use(helmet());
 // server.use(morgan('dev'));
 server.use(logger);
