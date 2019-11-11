@@ -10,25 +10,8 @@ router.use((req, res, next) => {
     next();
 })
 
-router.post('/', (req, res) => {
-    const newUser = req.body;
-
-    if('name' in newUser === false){
-        res.status(404).json({
-            message: 'Please include a name'
-        })
-    } else {
-        Users.insert(newUser)
-        .then(user => {
-            res.status(201).json(user);           
-        })
-        .catch(err => {
-            res.status(500).json({
-                message: 'Error adding user',
-                err
-            });
-        });        
-    }
+router.post('/', validateUser, (req, res) => {
+    res.status(201).json(req.user);
 });
 
 router.post('/:id/posts', validateUserId, (req, res) => {
@@ -65,23 +48,6 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', validateUserId, (req, res) => {
-    // const {id} = req.params;
-    // Users.getById(id)
-    // .then(user => {
-    //     if(user){
-    //         res.status(200).json(user)
-    //     }else {
-    //         res.status(404).json({
-    //             message: 'User ID not valid'
-    //         })
-    //     }
-    // })
-    // .catch(err => {
-    //     res.status(500).json({
-    //         message: 'Error fetching user',
-    //         err
-    //     })
-    // })
     res.status(200).json(req.user);
 });
 
@@ -143,7 +109,24 @@ function validateUserId(req, res, next) {
 };
 
 function validateUser(req, res, next) {
-
+    const userInfo = req.body;
+  
+    if (!userInfo.name) {
+        res.status(400).json({ message: "Name required" });
+    } else {
+      Users.insert(userInfo)
+        .then(user => {
+            req.user = user;
+            next();
+        })
+        .catch(err => {
+          res
+            .status(500).json({ 
+                message: "Error adding user",
+                err 
+            });
+        });
+    }
 };
 
 function validatePost(req, res, next) {
